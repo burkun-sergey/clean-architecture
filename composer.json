@@ -1,0 +1,13 @@
+{
+    "type": "project",
+    "require": {
+        "php": ">=8.2.0",
+        "ext-json": "*",
+        "ramsey/uuid": "^4.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
