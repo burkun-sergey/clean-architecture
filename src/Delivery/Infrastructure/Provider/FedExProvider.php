@@ -4,14 +4,33 @@ declare(strict_types=1);
 
 namespace App\Delivery\Infrastructure\Provider;
 
+use App\Delivery\Application\Provider\DeliveryProviderAsyncInterface;
 use App\Delivery\Application\Provider\DeliveryProviderInterface;
+use Psr\Http\Message\ResponseInterface;
+use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Promise\PromiseInterface;
 
-class FedExProvider implements DeliveryProviderInterface
+class FedExProvider extends AbstractProvider implements DeliveryProviderInterface, DeliveryProviderAsyncInterface
 {
-
     public function calculateDeliveryFee(float $weight, string $zipcode): float
     {
-        // TODO: Implement calculateDeliveryFee() method.
-        return 150.0;
+        return $this->getRandomFee(); //150.0;
+    }
+
+    public function requestDeliveryFee(float $weight, string $zipcode): PromiseInterface
+    {
+        $url = 'https://fedex.com/fee_calc/'.$weight.'/'.$zipcode;
+        $promise = $this->request($url)
+            ->then(
+                function(ResponseInterface $response) {
+                    return (float) json_decode($response->getBody()->getContents())['fee'];
+                },
+                function (TransferException $exception) {
+                    throw new ProviderException('.');
+                },
+            )
+        ;
+
+        return $promise;
     }
 }
